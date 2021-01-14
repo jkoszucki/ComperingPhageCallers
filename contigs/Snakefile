@@ -75,6 +75,7 @@ rule reads:
     output:
         read1="output/reads/{genome}_read1.fq",
         read2="output/reads/{genome}_read2.fq"
+    priority: 3
     params:
         read_lenght=config['parameters']['read_lenght']
 
@@ -95,6 +96,7 @@ rule assembly:
     params:
         outdir="output/assemblies/{genome}",
         fname="{genome}"
+    priority: 2
     conda:
         "../envs/unicycler.yaml"
     shell:
@@ -110,6 +112,7 @@ rule abacas:
     params:
         reference="../../../genomes/{genome}.fasta",
         contigs="../contigs/{genome}.fasta"
+    priority: 2
     conda:
         "../envs/abacas.yaml"
     shell:
