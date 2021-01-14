@@ -1,0 +1,8 @@
+genomes:
+  - test
+  # - AATZP
+threads:
+  - 8
+parameters:
+  read_lenght:
+    - 220

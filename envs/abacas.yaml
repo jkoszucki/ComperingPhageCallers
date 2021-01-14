@@ -1,0 +1,4 @@
+channels:
+  - HCC
+dependencies:
+  - abacas

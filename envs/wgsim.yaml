@@ -1,0 +1,4 @@
+channels:
+  - bioconda
+dependecies:
+  - wgsim =1.11

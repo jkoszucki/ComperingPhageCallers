@@ -1,0 +1,7 @@
+genomes
+databases
+scripts/VirSorter
+*/output
+*/.snakemake
+contigs/config.yaml
+complete/config.yaml
