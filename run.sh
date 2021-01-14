@@ -12,8 +12,8 @@ cp -f config.yaml contigs/config.yaml
 ##############################################################
 
 cd complete/ 
-snakemake -n --use-conda --cores all
+nice -n 5 snakemake -n --use-conda --cores all
 
 cd ../contigs/
-snakemake -n --use-conda --cores all
+nice -n 5 snakemake -n --use-conda --cores all
 #conda deactivate
