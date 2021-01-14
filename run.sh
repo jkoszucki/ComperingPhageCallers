@@ -3,8 +3,8 @@
 cp -f config.yaml complete/config.yaml
 cp -f config.yaml contigs/config.yaml
 
-source /usr/local/anaconda3//etc/profile.d/conda.sh
-conda activate snakemake
+#source /usr/local/anaconda3//etc/profile.d/conda.sh
+#conda activate snakemake
 
 ##############################################################
 # Run complete first! Necessary to download all dependecies. #
@@ -12,8 +12,8 @@ conda activate snakemake
 ##############################################################
 
 cd complete/ 
-snakemake --use-conda --cores all
+snakemake -n --use-conda --cores all
 
 cd ../contigs/
-snakemake --use-conda --cores all
-conda deactivate
+snakemake -n --use-conda --cores all
+#conda deactivate
