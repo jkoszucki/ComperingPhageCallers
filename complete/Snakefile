@@ -11,7 +11,6 @@ _ = [Path(cwd, 'output', subfolder).mkdir(exist_ok=True) for subfolder in subfol
 
 
 configfile: 'config.yaml'
-shell("cp -f ../config.yaml .")
 
 rule all:
     input:
@@ -21,7 +20,7 @@ rule all:
 
         expand("output/IS-elements/{genome}.txt" , genome=config['genomes']),
         expand("output/phispy/{genome}.tsv", genome=config['genomes']),
-        expand("output/virsorter/{genome}.csv", genome=config['genomes'])
+        expand("output/virsorter/{genome}", genome=config['genomes'])
 
 
 # If output exists the command shouldn't be running...
@@ -65,7 +64,7 @@ rule virsorter:
     input:
         infile="../genomes/{genome}.fasta"
     output:
-        "output/virsorter/{genome}.csv"
+        directory("output/virsorter/{genome}")
     conda:
         "../envs/virsorter.yaml"
     params:
@@ -76,7 +75,7 @@ rule virsorter:
     shell:
         "{params.virsorter} -f {input.infile} -db 1 --data-dir {params.database} "
         "--wdir {params.outdir} 2>/dev/null; "
-        "cp {params.outdir}/*.csv output/virsorter/{params.fname}.csv"
+        # "cp {params.outdir}/*.csv output/virsorter/{params.fname}.csv"
 
 
 rule IS_elements:

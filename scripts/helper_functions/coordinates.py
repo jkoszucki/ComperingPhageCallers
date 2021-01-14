@@ -25,9 +25,9 @@ def get_phispy_coordinates(prophage_table_tsv_path):
 
 
 def get_virsorter_coordinates(fasta_paths_list):
-	"""Extracts coordinates from list of headers from fasta file. 
+	"""Extracts coordinates from list of headers from fasta file.
 	Returns list of coordinates (if whole contig was detected 0,0 tuple is appended as a place holder).
-	contig_id list return list of contigs id's if file had them, otherwise list of genome names. 
+	contig_id list return list of contigs id's if file had them, otherwise list of genome names.
 	"""
 	import helper_functions as hf
 	headers_list = hf.get_headers(fasta_paths_list)
@@ -58,19 +58,18 @@ def get_absolute_coordinates(program_contigs=[((10,100),1), ((200,300),2)], cont
 				index = program_contigs.index(program_contig)
 				matched_contig = program_contigs.pop(index)
 				(start, end), matched_id = matched_contig
-				contig_start, contig_end = contig[0] 
+				contig_start, contig_end = contig[0]
 
 				if program_contig[0] == (0,0):
 					program_contigs.insert(index, ((contig_start, contig_end), matched_id))
 				else:
-					if contig[-2] == 'revers':   
+					if contig[-2] == 'revers':
 						phage_len = end - start
 						new_start = contig_start + (contig_end - (contig_start + end))
 						program_contigs.insert(index, ((new_start, new_start + phage_len), matched_id))
 					else:
 						program_contigs.insert(index, ((contig_start + start, contig_start + end), matched_id))
 	return program_contigs
-
 
 
 def parse_abacas_contigs(contigs):
@@ -80,7 +79,7 @@ def parse_abacas_contigs(contigs):
 	for contig in contigs:
 		if 'contig' in contig:
 			if 'complement' in contig:
-				coordinates.append((int(contig[21:].strip('complement()').split('..')[0]), 
+				coordinates.append((int(contig[21:].strip('complement()').split('..')[0]),
 				int(contig[21:].strip('complement()').split('..')[1])))
 				orientation.append('revers')
 			else:
@@ -91,5 +90,3 @@ def parse_abacas_contigs(contigs):
 		elif 'systematic_id' in contig:
 			ids.append(int(contig.split("\"")[-2]))
 	return list(zip(coordinates, orientation, ids))
-
-

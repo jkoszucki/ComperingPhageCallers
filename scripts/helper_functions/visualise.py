@@ -5,17 +5,17 @@ from biofile import parse_file, get_genome_lenght
 
 
 
-def complete_vs_contigs(program_complete=[(10,200), (300,500)], program_assembly=[(200,440), (600,900)], contigs=[(10,500),(600,1000)], true_positives=[(10,200), (600,900)], 
+def complete_vs_contigs(program_complete=[(10,200), (300,500)], program_assembly=[(200,440), (600,900)], contigs=[(10,500),(600,1000)], true_positives=[(10,200), (600,900)],
     is_complete=[(200,300), (800,900)] ,genome_lenght=1000, program='', fname='test-visualise-genome', fpath='/Users/januszkoszucki/', dpi=500):
 
     from pathlib import Path
 
     possible_programs =  ['virsorter-complete', 'virsorter-assembly', 'contigs']
-    
+
     dict_list = []
     plt.figure(num=None, figsize=(10, 1), dpi=dpi)
     plt.title(label=f'{fname}-{program}', fontdict = {'fontsize': 7}, loc='center', y=1.05)
-    
+
     genome_line = [(0, genome_lenght)]
     heights = [5, 11, 11, 11, 15, 22]
     width = [10, 2, 2, 2, 6, 10]
@@ -32,26 +32,26 @@ def complete_vs_contigs(program_complete=[(10,200), (300,500)], program_assembly
     plt.ylim(0, sum(heights)-27)
     plt.xlim(0, genome_lenght)
     plt.gca().axes.get_yaxis().set_visible(False)
-    plt.savefig(str(Path(fpath, fname + '-' + program +'.png')), bbox_inches='tight', dpi=dpi)  
+    plt.savefig(str(Path(fpath, fname + '-' + program +'.png')), bbox_inches='tight', dpi=dpi)
     plt.show()
 
 
 
 def visualise_genome(genome_path, genome_lenght, dpi=500):
     possible_confidences = ['Not-determined', 'Low-quality', 'Medium-quality', 'High-quality', 'Complete']
-    possible_programs =  ['virsorter', 'phispy', 'allcontigs', 'contigs', 'virsorter-assembly', 'provirus', 'manual']   
+    possible_programs =  ['virsorter', 'phispy', 'allcontigs', 'contigs', 'virsorter-assembly', 'provirus', 'manual']
     # palettes_program = ['mako', 'mako', 'rocket', 'viridis', 'pastel']
-    
+
     dict_list = []
     plt.figure(num=None, figsize=(6, 4), dpi=dpi)
     plt.title(label=genome_path.stem, fontdict = {'fontsize': 10}, loc='center', y=0.5)
-    
+
     for program in possible_programs:
         program_path = PurePath(genome_path, 'coordinates_' + program)
         try:
             columns = parse_file(program_path)
-        except OSError as error: 
-            continue 
+        except OSError as error:
+            continue
 
         if columns:
             starts = columns[0]
@@ -67,34 +67,34 @@ def visualise_genome(genome_path, genome_lenght, dpi=500):
                 height = i/3 + 0.2
             else:
                 continue
-                
+
         if program == 'virsorter' or program == 'phispy':
             palette = 'mako'
             hues = []
             for dectection_conf in confidence:
-                for hue, conf in enumerate(possible_confidences):          
-                    if dectection_conf == conf: 
+                for hue, conf in enumerate(possible_confidences):
+                    if dectection_conf == conf:
                         hues.append(sns.color_palette(palette)[hue])
 
-        else:            
+        else:
             hues = []
-            for detection_conf in confidence:          
-                if program == 'virsorter-assembly': 
+            for detection_conf in confidence:
+                if program == 'virsorter-assembly':
                     program_hue = 1
                     hues.append(sns.color_palette()[program_hue])
-                elif program == 'provirus': 
+                elif program == 'provirus':
                     program_hue = 2
                     hues.append(sns.color_palette()[program_hue])
-                elif program == 'manual': 
+                elif program == 'manual':
                     program_hue = 4
                     hues.append(sns.color_palette()[program_hue])
-                elif program == 'contigs': 
+                elif program == 'contigs':
                     program_hue = 5
                     hues.append(sns.color_palette()[program_hue])
-                elif program == 'allcontigs': 
+                elif program == 'allcontigs':
                     program_hue = 5
                     hues.append(sns.color_palette()[program_hue])
-                # else: 
+                # else:
                 #     hues.append(sns.color_palette()[-1])
 
         my_dict = {'program': program,
@@ -122,5 +122,5 @@ def visualise_genome(genome_path, genome_lenght, dpi=500):
         plt.gcf().subplots_adjust(top=0.16 * len(dict_list))
         plt.gca().axes.get_yaxis().set_visible(False)
         plt.savefig(fname=f'/Users/januszkoszucki/Desktop/{genome_path.stem}.png', bbox_inches='tight', dpi=dpi)
-    print(genome_path.stem)    
+    print(genome_path.stem)
     plt.show()

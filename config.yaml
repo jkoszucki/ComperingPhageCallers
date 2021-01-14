@@ -1,6 +1,22 @@
 genomes:
-  - test
-  # - AATZP
+  - AATZP
+  # - INF014
+  # - INF078
+  # - INF116
+  # - INF125
+  # - INF206
+  # - INF235
+  # - J1
+  # - KPNIH27
+  # - KPNIH39
+  # - KSB1_1I
+  # - KSB1_7F
+  # - MSB1_8A
+  # - NJST258_1
+  # - NTUH-K2044
+  # - PMK1
+  # - XH209
+  # - NTUH-K2044
 threads:
   - 8
 parameters:
@@ -8,6 +24,6 @@ parameters:
     - 220
 IS_BLAST:
  identity:
-    - 98 
+    - 98
  evalue:
-    - 10e-3 
+    - 10e-3

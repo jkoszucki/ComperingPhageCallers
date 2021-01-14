@@ -1,0 +1,93 @@
+from pathlib import Path
+import os
+
+cwd = Path(os.getcwd())
+os.sys.path.append(Path(cwd.parent, 'scripts', 'helper_functions'))
+
+from Bio import SeqIO
+from biofile import load_file, get_genome_lenght, prepare_to_save
+from visualise import complete_vs_contigs
+from coordinates import get_phispy_coordinates, get_virsorter_coordinates
+from coordinates import get_absolute_coordinates, parse_abacas_contigs
+
+def filter_virsorter_categories(virsorter_output_path, categories=[3,6]):
+        """Filters virosorter path for indicated categories (list of categories to filter).
+        Returns paths to fasta files with this categories."""
+
+        categories = [str(category) for category in categories]
+        fasta_paths = Path(virsorter_output_path, 'Predicted_viral_sequences').glob('*.fasta')
+        filt_paths = [path for path in fasta_paths if all(category not in path.stem for category in categories)]
+
+        return filt_paths
+
+_ = [Path(cwd, folder).mkdir(exist_ok=True) for folder in ['figures', 'manual']]
+
+genome = 'AATZP'
+
+# Just one file.
+contigs_file = Path(cwd.parent, f'contigs/output/contigs-sort/{genome}.tab')
+contigs = load_file(contigs_file)
+contigs = parse_abacas_contigs(contigs)
+
+# Load coordinates from VirSorter for complete genome.
+vrs_complete = filter_virsorter_categories(Path(cwd.parent, \
+f'complete/output/virsorter/{genome}/Predicted_viral_sequences'), categories=[3,6])
+vrs_complete, _ = get_virsorter_coordinates(vrs_complete)
+
+# Load coordinates and contigs' IDs from VirSorter for contigs.
+vrs_contigs = filter_virsorter_categories(Path(cwd.parent, \
+f'contigs/output/virsorter/{genome}/Predicted_viral_sequences'), categories=[3,6])
+vrs_contigs, vrs_ids_contigs = get_virsorter_coordinates(vrs_contigs)
+vrs_contigs = list(zip(vrs_contigs, vrs_ids_contigs))
+
+# Load coordinates from PhiSpy for complete genome.
+phispy_complete = Path(cwd.parent, \
+f'complete/output/phispy/{genome}.tsv')
+phi_complete, _ = get_phispy_coordinates(phispy_complete)
+
+# Load coordinates and contigs' IDs from PhiSpy for contigs.
+phi_contigs = Path(cwd.parent, \
+f'contigs/output/phispy/{genome}.tsv')
+phi_contigs, phi_ids_contigs = get_phispy_coordinates(phi_contigs)
+phi_contigs = list(zip(phi_contigs, phi_ids_contigs))
+
+# # Maps detected prophages to contigs and re-calculates their position on complete genome.
+vrs_contigs = get_absolute_coordinates(program_contigs=vrs_contigs, contigs=contigs)
+phi_contigs = get_absolute_coordinates(program_contigs=phi_contigs, contigs=contigs)
+
+vrs_complete = vrs_complete
+vrs_contigs = [contig[0] for contig in vrs_contigs]
+contigs = [contig[0] for contig in contigs]
+
+phi_complete = phi_complete
+phi_contigs = [contig[0] for contig in phi_contigs]
+
+genome_lenght = get_genome_lenght(Path(cwd.parent, 'genomes', f'{genome}.fasta'))
+figure = Path(cwd.parent, f'compare/figures')
+
+
+lines = load_file(Path(cwd, 'manual', f'{genome}.txt'))
+if lines[0]: true_positives = [(int(line.split()[0]), int(line.split()[1])) for line in lines]
+else: true_positives = [(0,0)]
+
+is_complete = [(0,0)]
+
+complete_vs_contigs(program='vrs',
+                    contigs=contigs,
+                    program_complete=vrs_complete,
+                    program_assembly=vrs_contigs,
+                    true_positives=true_positives,
+                    is_complete=is_complete,
+                    genome_lenght=genome_lenght,
+                    fname=genome,
+                    fpath=figure)
+
+complete_vs_contigs(program='phi',
+                    contigs=contigs,
+                    program_complete=phi_complete,
+                    program_assembly=phi_contigs,
+                    true_positives=true_positives,
+                    is_complete=is_complete,
+                    genome_lenght=genome_lenght,
+                    fname=genome,
+                    fpath=figure)

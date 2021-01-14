@@ -5,3 +5,4 @@ scripts/VirSorter
 */.snakemake
 contigs/config.yaml
 complete/config.yaml
+compare/figures

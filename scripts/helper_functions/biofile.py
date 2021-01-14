@@ -7,7 +7,7 @@ def parse_file(path):
     columns = []
     with open(path, 'r+') as f:
         rows = [line.strip().split() for line in f.readlines()]
-    
+
     if rows:
         for cell, element in enumerate(rows[0]):
             column = [row[cell] for row in rows]
@@ -55,6 +55,14 @@ def get_genome_lenght(genome_path, ftype='fasta'):
     sequence = next(seq_record).seq
     return len(sequence)
 
+
+def get_genome_length(genome_path, ftype='fasta'):
+    """Does it work properly?"""
+    from Bio import SeqIO
+    """Get lenght of the analyzed genome."""
+    seq_record = SeqIO.parse(genome_path, ftype)
+    sequence = next(seq_record).seq
+    return len(sequence)
 
 # def get_genomes(iterate_files_path):
 #     """Load names of genomes from iterate_files.txt"""
