@@ -3,27 +3,20 @@ import os
 
 cwd = os.getcwd()
 folders = ['databases', 'genomes']
-subfolders = ['prokka', 'virsorter', 'phispy', 'reads', 'assemblies', 'contigs', 'contigs-sort-temp']
+subfolders = ['prokka', 'virsorter', 'phispy', 'reads', 'assemblies', 'contigs', 'contigs-sort']
 
 _ = [Path(Path(cwd).parent, folder) for folder in folders]
 _ = Path(cwd, 'output').mkdir(exist_ok=True)
 _ = [Path(cwd, 'output', subfolder).mkdir(exist_ok=True) for subfolder in subfolders]
 
-
 configfile: 'config.yaml'
+shell("cp -f ../config.yaml .")
 
 rule all:
     input:
         expand("output/phispy/{genome}.tsv", genome=config['genomes']),
         expand("output/virsorter/{genome}.csv", genome=config['genomes'])
 
-rule copy_configfile:
-    params:
-        input="../config.yaml",
-        output="."
-    priority: 1
-    shell:
-        "cp -f {params.input} {params.output}"
 
 # If output exists the command shouldn't be running...
 # If prokka already annotated genome it will give rise to error.
@@ -109,17 +102,23 @@ rule assembly:
         "unicycler -t 8 --no_correct -1 {input.read1} -2 {input.read2} -o {params.outdir}; "
         "cp -f {params.outdir}/assembly.fasta output/contigs/{params.fname}.fasta"
 
-# rule abacas:
-#     input:
-#         reference="genomes/{genome}.fasta",
-#         contigs=rules.assembly.output
-#     output:
-#         "contigs/contigs-sort-temp/{genome}.tab"
-#     params:
-#         outdir="contigs/contigs-sort-temp/{genome}"
-#     run:
-#         "abacas.1.3.1.pl -r {input.reference} -q  -p nucmer -i 98 -v 100 -o contigs-sort-temp/{genome}"
-#         "cp {params.outdir}/*.tab {params.outdir}.tab"
+rule abacas:
+    # input:
+    #     reference="../genomes/{genome}.fasta",
+    #     contigs=rules.assembly.output
+    output:
+        "output/contigs-sort/{genome}.tab"
+    params:
+        reference="../../../genomes/{genome}.fasta",
+        contigs="../contigs/{genome}.fasta"
+    conda:
+        "../envs/abacas.yaml"
+    shell:
+        "cd output/contigs-sort; "
+        "abacas.1.3.1.pl -r {params.reference} -q {params.contigs} -p nucmer -i 98 -v 100 -o {wildcards.genome}; "
+        "rm *.{{delta,tiling,bin,crunch,fasta,gaps,gaps.tab,out}}; "
+        "cd ../../;"
+
 
 
 # # Sorting contigs.
@@ -145,25 +144,3 @@ rule assembly:
 # contigs_file = load_file(contigs_path)
 # contigs = parse_abacas_contigs(contigs_file)
 # # get_absolute_coordinates
-
-
-
-
-
-rule install_virsorter:
-    output:
-        directory("scripts/VirSorter")
-    shell:
-        "cd scripts/; "
-        "git clone https://github.com/simroux/VirSorter.git; "
-        "cd VirSorter/Scripts; "
-        "make clean; make; cd {cwd}"
-
-rule install_virsorter_db:
-    output:
-        directory("databases/virsorter-data")
-    shell:
-        "cd databases; "
-        "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz "
-        "tar -xvzf virsorter-data-v2.tar.gz "
-        "cd {cwd}"

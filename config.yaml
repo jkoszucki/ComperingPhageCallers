@@ -6,3 +6,8 @@ threads:
 parameters:
   read_lenght:
     - 220
+IS_BLAST:
+ identity:
+    - 98 
+ evalue:
+    - 10e-3 

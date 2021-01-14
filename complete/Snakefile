@@ -3,7 +3,7 @@ import os
 
 cwd = os.getcwd()
 folders = ['databases', 'genomes']
-subfolders = ['prokka', 'virsorter', 'phispy']
+subfolders = ['prokka', 'virsorter', 'phispy', 'IS-elements']
 
 _ = [Path(Path(cwd).parent, folder) for folder in folders]
 _ = Path(cwd, 'output').mkdir(exist_ok=True)
@@ -11,37 +11,18 @@ _ = [Path(cwd, 'output', subfolder).mkdir(exist_ok=True) for subfolder in subfol
 
 
 configfile: 'config.yaml'
+shell("cp -f ../config.yaml .")
 
 rule all:
     input:
+        "../scripts/VirSorter",
+        "../databases/virsorter-data",
+        "../databases/IS-database",
+
+        expand("output/IS-elements/{genome}.txt" , genome=config['genomes']),
         expand("output/phispy/{genome}.tsv", genome=config['genomes']),
         expand("output/virsorter/{genome}.csv", genome=config['genomes'])
 
-rule copy_configfile:
-    params:
-        input="../config.yaml",
-        output="."
-    priority: 1
-    shell:
-        "cp -f {params.input} {params.output}"
-
-rule install_virsorter:
-    output:
-        directory("../scripts/VirSorter")
-    shell:
-        "cd ../scripts/; "
-        "git clone https://github.com/simroux/VirSorter.git; "
-        "cd ../scripts/VirSorter/Scripts; "
-        "make clean; make; cd {cwd}"
-
-rule install_virsorter_db:
-    output:
-        directory("../databases/virsorter-data")
-    shell:
-        "cd databases; "
-        "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz "
-        "tar -xvzf virsorter-data-v2.tar.gz "
-        "cd {cwd}"
 
 # If output exists the command shouldn't be running...
 # If prokka already annotated genome it will give rise to error.
@@ -61,6 +42,7 @@ rule annotate:
         "cp {params.outdir}/*.gbk "
         "output/prokka/{params.fname}.gbk; "
         # "rm -rf {params.outdir}"
+
 
 rule phispy:
     input:
@@ -95,3 +77,56 @@ rule virsorter:
         "{params.virsorter} -f {input.infile} -db 1 --data-dir {params.database} "
         "--wdir {params.outdir} 2>/dev/null; "
         "cp {params.outdir}/*.csv output/virsorter/{params.fname}.csv"
+
+
+rule IS_elements:
+    output:
+        "output/IS-elements/{genome}.txt"
+    conda:
+        "../envs/seqkit.yaml"
+    params:
+        database="../databases/IS-database/IS.fna",
+        query="../genomes/{genome}.fasta",
+        identity=config['IS_BLAST']['identity'],
+        evalue=config['IS_BLAST']['evalue']
+    shell:
+        "blastn -db {params.database} -query {params.query} "
+        "-perc_identity {params.identity} -evalue {params.evalue} "
+        '-outfmt "6 qstart qend" > output/IS-elements/{wildcards.genome}.txt'
+
+
+rule install_virsorter:
+    output:
+        directory("../scripts/VirSorter")
+    priority: 1
+    shell:
+        "cd ../scripts/; "
+        "git clone https://github.com/simroux/VirSorter.git; "
+        "cd ../scripts/VirSorter/Scripts; "
+        "make clean; make; cd {cwd}"
+
+
+rule virsorter_database:
+    output:
+        directory("../databases/virsorter-data")
+    priority: 1
+    shell:
+        "cd databases; "
+        "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz "
+        "tar -xvzf virsorter-data-v2.tar.gz "
+        "cd {cwd}"
+
+
+rule IS_database:
+    output:
+        directory("../databases/IS-database")
+    conda:
+        "../envs/seqkit.yaml"
+    priority: 1
+    shell:
+        "cd ../databases/; rm -rf ISfinder-sequences; "
+        "git clone https://github.com/thanhleviet/ISfinder-sequences; "
+        "rm -rf IS-database; mkdir IS-database; cd IS-database; "
+        "seqkit rmdup -s < ../ISfinder-sequences/IS.fna > IS.fna; "
+        "rm -rf ../ISfinder-sequences; "
+        "makeblastdb -in IS.fna -parse_seqids -dbtype nucl; "
