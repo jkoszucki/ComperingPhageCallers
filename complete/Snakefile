@@ -63,18 +63,18 @@ rule phispy:
 
 rule virsorter:
     input:
-        infile="../genomes/{genome}.fasta"
+        infile="../genomes/{genome}.fasta",
+        database="../databases/virsorter-data/"
     output:
         directory("output/virsorter/{genome}")
     conda:
         "../envs/virsorter.yaml"
     params:
         virsorter="../scripts/VirSorter/wrapper_phage_contigs_sorter_iPlant.pl",
-        database="../databases/virsorter-data/",
         outdir="output/virsorter/{genome}",
         fname="{genome}"
     shell:
-        "{params.virsorter} -f {input.infile} -db 1 --data-dir {params.database} "
+        "{params.virsorter} -f {input.infile} -db 1 --data-dir {input.database} "
         "--wdir {params.outdir} 2>/dev/null; "
         # "cp {params.outdir}/*.csv output/virsorter/{params.fname}.csv"
 
@@ -114,7 +114,7 @@ rule virsorter_database:
         "cd ../databases; "
         "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz; "
         "tar -xvzf virsorter-data-v2.tar.gz; "
-        "cd {cwd}"
+        # "cd {cwd}"
 
 
 rule IS_database:

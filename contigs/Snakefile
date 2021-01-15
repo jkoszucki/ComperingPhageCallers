@@ -77,7 +77,7 @@ rule reads:
         read2="output/reads/{genome}_read2.fq"
     priority: 3
     params:
-        read_lenght=config['parameters']['read_lenght']
+        read_lenght=config['read_lenght']
 
     ###############################################################
     # Install wgsim locally in snakemake env to generate reads!!! #
@@ -95,12 +95,15 @@ rule assembly:
         "output/contigs/{genome}.fasta"
     params:
         outdir="output/assemblies/{genome}",
-        fname="{genome}"
+        fname="{genome}",
+        min_fasta_length=config['min_fasta_length']
     priority: 2
     conda:
         "../envs/unicycler.yaml"
     shell:
-        "unicycler -t 8 --no_correct -1 {input.read1} -2 {input.read2} -o {params.outdir}; "
+        "unicycler -t 8 --no_correct -1 {input.read1} -2 {input.read2} "
+        "--min_fasta_length MIN_FASTA_LENGTH {params.min_fasta_length} "
+        "-o {params.outdir}; "
         "cp -f {params.outdir}/assembly.fasta output/contigs/{params.fname}.fasta"
 
 # input:

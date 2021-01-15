@@ -19,9 +19,10 @@ genomes:
   # - NTUH-K2044
 threads:
   - 8
-parameters:
-  read_lenght:
-    - 220
+read_lenght:
+  - 220
+min_fasta_length:
+  - 0
 IS_BLAST:
  identity:
     - 98
