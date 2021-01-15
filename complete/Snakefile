@@ -80,17 +80,18 @@ rule virsorter:
 
 
 rule IS_elements:
+    input:
+        database="../databases/IS-database/IS.fna"
     output:
         "output/IS-elements/{genome}.txt"
     conda:
         "../envs/seqkit.yaml"
     params:
-        database="../databases/IS-database/IS.fna",
         query="../genomes/{genome}.fasta",
         identity=config['IS_BLAST']['identity'],
         evalue=config['IS_BLAST']['evalue']
     shell:
-        "blastn -db {params.database} -query {params.query} "
+        "blastn -db {input.database} -query {params.query} "
         "-perc_identity {params.identity} -evalue {params.evalue} "
         '-outfmt "6 qstart qend" > output/IS-elements/{wildcards.genome}.txt'
 
@@ -103,7 +104,7 @@ rule install_virsorter:
         "cd ../scripts/; "
         "git clone https://github.com/simroux/VirSorter.git; "
         "cd ../scripts/VirSorter/Scripts; "
-        "make clean; make; cd {cwd}"
+        "make clean; make;
 
 
 rule virsorter_database:
@@ -114,7 +115,6 @@ rule virsorter_database:
         "cd ../databases; "
         "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz; "
         "tar -xvzf virsorter-data-v2.tar.gz; "
-        # "cd {cwd}"
 
 
 rule IS_database:
