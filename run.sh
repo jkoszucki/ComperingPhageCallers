@@ -11,9 +11,11 @@ cp -f config.yaml contigs/config.yaml
 # Download pVOGs.hmm manually.				     #
 ##############################################################
 
+read -p 'Number of cores: ' cores
+
 cd complete/ 
-nice -n 5 snakemake --use-conda --cores 16 
+nice -n 5 snakemake --use-conda --cores ${cores}
 
 cd ../contigs/
-nice -n 5 snakemake --use-conda --cores 16
+nice -n 5 snakemake --use-conda --cores ${cores}
 #conda deactivate

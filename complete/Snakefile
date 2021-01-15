@@ -33,6 +33,7 @@ rule annotate:
     params:
         outdir="output/prokka/{genome}",
         fname="{genome}"
+    priority: 99
     conda:
         "../envs/prokka.yaml"
     shell:
@@ -97,7 +98,7 @@ rule IS_elements:
 rule install_virsorter:
     output:
         directory("../scripts/VirSorter")
-    priority: 1
+    priority: 100
     shell:
         "cd ../scripts/; "
         "git clone https://github.com/simroux/VirSorter.git; "
@@ -108,11 +109,11 @@ rule install_virsorter:
 rule virsorter_database:
     output:
         directory("../databases/virsorter-data")
-    priority: 1
+    priority: 100
     shell:
-        "cd databases; "
-        "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz "
-        "tar -xvzf virsorter-data-v2.tar.gz "
+        "cd ../databases; "
+        "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz; "
+        "tar -xvzf virsorter-data-v2.tar.gz; "
         "cd {cwd}"
 
 
@@ -121,7 +122,7 @@ rule IS_database:
         directory("../databases/IS-database")
     conda:
         "../envs/seqkit.yaml"
-    priority: 1
+    priority: 100
     shell:
         "cd ../databases/; rm -rf ISfinder-sequences; "
         "git clone https://github.com/thanhleviet/ISfinder-sequences; "
