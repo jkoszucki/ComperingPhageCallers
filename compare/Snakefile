@@ -62,22 +62,25 @@ contigs = [contig[0] for contig in contigs]
 phi_complete = phi_complete
 phi_contigs = [contig[0] for contig in phi_contigs]
 
-genome_lenght = get_genome_lenght(Path(cwd.parent, 'genomes', f'{genome}.fasta'))
-figure = Path(cwd.parent, f'compare/figures')
-
-
 lines = load_file(Path(cwd, 'manual', f'{genome}.txt'))
 if lines[0]: true_positives = [(int(line.split()[0]), int(line.split()[1])) for line in lines]
 else: true_positives = [(0,0)]
 
-is_complete = [(0,0)]
+IS_path = Path(cwd.parent, f'complete/output/IS-elements/{genome}.txt')
+if load_file(IS_path):
+    IS_complete = [(int(line.split()[0]), int(line.split()[1])) \
+                   for line in load_file(IS_path)]
+else: IS_complete = [(0,0)]
+
+genome_lenght = get_genome_lenght(Path(cwd.parent, 'genomes', f'{genome}.fasta'))
+figure = Path(cwd.parent, f'compare/figures')
 
 complete_vs_contigs(program='vrs',
                     contigs=contigs,
                     program_complete=vrs_complete,
                     program_assembly=vrs_contigs,
                     true_positives=true_positives,
-                    is_complete=is_complete,
+                    is_complete=IS_complete,
                     genome_lenght=genome_lenght,
                     fname=genome,
                     fpath=figure)
@@ -87,7 +90,7 @@ complete_vs_contigs(program='phi',
                     program_complete=phi_complete,
                     program_assembly=phi_contigs,
                     true_positives=true_positives,
-                    is_complete=is_complete,
+                    is_complete=IS_complete,
                     genome_lenght=genome_lenght,
                     fname=genome,
                     fpath=figure)

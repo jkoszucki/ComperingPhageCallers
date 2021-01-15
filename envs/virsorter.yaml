@@ -3,7 +3,8 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - bioconda mcl=14.137 muscle
+  - mcl=14.137
+  - muscle
   - blast
   - perl-bioperl
   - perl-file-which
