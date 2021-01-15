@@ -63,20 +63,23 @@ rule phispy:
 rule virsorter:
     input:
         infile="../genomes/{genome}.fasta",
-        virsorter="../scripts/VirSorter/wrapper_phage_contigs_sorter_iPlant.pl",
-        database="../databases/virsorter-data/"
+        virsorter=rules.install_virsorter.output,
+        database=rules.virsorter_database.output
+        # virsorter="../scripts/VirSorter/wrapper_phage_contigs_sorter_iPlant.pl",
+        # database="../databases/virsorter-data/"
     output:
         directory("output/virsorter/{genome}")
     conda:
         "../envs/virsorter.yaml"
     shell:
-        "{input.virsorter} -f {input.infile} -db 1 --data-dir {input.database} "
+        "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
+        "-db 1 --data-dir {input.database} "
         "--wdir {output}; "
 
 
 rule IS_elements:
     input:
-        database="../databases/IS-database/IS.fna"
+        rules.IS_database.output
     output:
         "output/IS-elements/{genome}.txt"
     conda:
@@ -86,7 +89,7 @@ rule IS_elements:
         identity=config['IS_BLAST']['identity'],
         evalue=config['IS_BLAST']['evalue']
     shell:
-        "blastn -db {input.database} -query {params.query} "
+        "blastn -db {input.database}/IS.fna -query {params.query} "
         "-perc_identity {params.identity} -evalue {params.evalue} "
         '-outfmt "6 qstart qend" > output/IS-elements/{wildcards.genome}.txt'
 
