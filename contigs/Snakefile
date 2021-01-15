@@ -17,58 +17,6 @@ rule all:
         expand("output/phispy/{genome}.tsv", genome=config['genomes']),
         expand("output/virsorter/{genome}", genome=config['genomes'])
 
-
-# If output exists the command shouldn't be running...
-# If prokka already annotated genome it will give rise to error.
-rule annotate:
-    input:
-        "output/contigs/{genome}.fasta"
-    output:
-        "output/prokka/{genome}.gbk"
-    params:
-        outdir="output/prokka/{genome}",
-        fname="{genome}"
-    conda:
-        "../envs/prokka.yaml"
-    shell:
-        "prokka --usegenus --genus Caudovirales --kingdom Bacteria "
-        "--outdir {params.outdir} {input} 2>/dev/null; "
-        "cp {params.outdir}/*.gbk output/prokka/{params.fname}.gbk; "
-
-rule phispy:
-    input:
-        rules.annotate.output
-    output:
-        "output/phispy/{genome}.tsv"
-    params:
-        pvogs="../databases/pVOGs.hmm",
-        outdir="output/phispy/{genome}",
-        fname="{genome}"
-    conda:
-        "../envs/phispy.yaml"
-    shell:
-        "PhiSpy.py {input} "
-        "--phmms {params.pvogs} -o {params.outdir} 2>/dev/null; "
-        "cp -f {params.outdir}/prophage_coordinates.tsv output/phispy/{params.fname}.tsv"
-
-rule virsorter:
-    input:
-        "output/contigs/{genome}.fasta"
-    output:
-        directory("output/virsorter/{genome}")
-    conda:
-        "../envs/virsorter.yaml"
-    params:
-        virsorter="../scripts/VirSorter/wrapper_phage_contigs_sorter_iPlant.pl",
-        database="../databases/virsorter-data/",
-        outdir="output/virsorter/{genome}",
-        fname="{genome}"
-    shell:
-        "{params.virsorter} -f {input} -db 1 --data-dir {params.database} "
-        "--wdir {params.outdir} 2>/dev/null; "
-        # "cp -f {params.outdir}/*.csv output/virsorter/{params.fname}.csv"
-
-
 rule reads:
     input:
         "../genomes/{genome}.fasta"
@@ -92,34 +40,81 @@ rule assembly:
         read1=rules.reads.output.read1,
         read2=rules.reads.output.read2
     output:
-        "output/contigs/{genome}.fasta"
+        "output/assemblies/{genome}"
     params:
-        outdir="output/assemblies/{genome}",
-        fname="{genome}",
         min_fasta_length=config['min_fasta_length']
     priority: 2
     conda:
         "../envs/unicycler.yaml"
     shell:
         "unicycler -t 8 --no_correct -1 {input.read1} -2 {input.read2} "
-        "--min_fasta_length MIN_FASTA_LENGTH {params.min_fasta_length} "
-        "-o {params.outdir}; "
-        "cp -f {params.outdir}/assembly.fasta output/contigs/{params.fname}.fasta"
-
-# input:
-    # rules.assembly.output
+        "--min_fasta_length {params.min_fasta_length} "
+        "-o {output}; "
+        "cp -f output/assemblies/{wildcards.genomes}/assembly.fasta "
+        "output/contigs/{wildcards.genome}.fasta"
 
 rule abacas:
+    input:
+        contigs=rules.assembly.output,
+        reference='../genomes/{genome}.fasta'
     output:
         "output/contigs-sort/{genome}.tab"
-    params:
-        reference="../../../genomes/{genome}.fasta",
-        contigs="../contigs/{genome}.fasta"
-    priority: 2
+    # params:
+        # reference="../../../genomes/{genome}.fasta",
+
+    priority: 1
     conda:
         "../envs/abacas.yaml"
     shell:
-        "cd output/contigs-sort; "
-        "abacas.1.3.1.pl -r {params.reference} -q {params.contigs} -p nucmer -i 98 -v 100 -o {wildcards.genome}; "
-        # "rm *.{{delta,tiling,bin,crunch,gaps,gaps.tab,out}}; "
-        "cd ../../;"
+        "abacas.1.3.1.pl -r {input.reference} -q {input.contigs}/assembly.fasta -p nucmer -i 98 -v 100 -o {output}; "
+        "mv output/contigs-sort/{wildcards.genome}.tab.tab output/contigs-sort/{wildcards.genome}.tab; "
+        "rm {wildcards.genome}*; rm nucmer*"
+
+
+
+# If output exists the command shouldn't be running...
+# If prokka already annotated genome it will give rise to error.
+rule annotate:
+    input:
+        rules.assembly.output
+        # "output/contigs/{genome}.fasta"
+    output:
+        "output/prokka/{genome}.gbk"
+    params:
+        outdir="output/prokka/{genome}"
+    conda:
+        "../envs/prokka.yaml"
+    shell:
+        "prokka --usegenus --genus Caudovirales --kingdom Bacteria "
+        "--outdir {params.outdir} {input}/assembly.fasta; "
+        "cp {params.outdir}/*.gbk output/prokka/{wildcards.genome}.gbk; "
+
+rule phispy:
+    input:
+        rules.annotate.output
+    output:
+        "output/phispy/{genome}.tsv"
+    params:
+        pvogs="../databases/pVOGs.hmm",
+        outdir="output/phispy/{genome}",
+        fname="{genome}"
+    conda:
+        "../envs/phispy.yaml"
+    shell:
+        "PhiSpy.py {input} "
+        "--phmms {params.pvogs} -o {params.outdir}; "
+        "cp -f {params.outdir}/prophage_coordinates.tsv output/phispy/{params.fname}.tsv"
+
+rule virsorter:
+    input:
+        infile=rules.assembly.output,
+        virsorter="../scripts/VirSorter/wrapper_phage_contigs_sorter_iPlant.pl",
+        database="../databases/virsorter-data/"
+    output:
+        directory("output/virsorter/{genome}")
+    conda:
+        "../envs/virsorter.yaml"
+    shell:
+        "{input.virsorter} -f {input.infile} -db 1 --data-dir {input.database} "
+        "--wdir {output} 2>/dev/null; "
+        # "cp -f {params.outdir}/*.csv output/virsorter/{params.fname}.csv"

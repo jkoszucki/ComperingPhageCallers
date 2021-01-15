@@ -1,0 +1,15 @@
+name: virsorter-env
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - mcl=14.137
+  - muscle
+  - blast
+  - perl-bioperl
+  - perl-file-which
+  - hmmer=3.1b2
+  - perl-parallel-forkmanager
+  - perl-list-moreutils
+  - diamond=0.9.14
+prefix: /usr/local/anaconda3/envs/virsorter-env

@@ -38,7 +38,7 @@ rule annotate:
         "../envs/prokka.yaml"
     shell:
         "prokka --usegenus --genus Caudovirales --kingdom Bacteria "
-        "--outdir {params.outdir} {input.infile} 2>/dev/null; "
+        "--outdir {params.outdir} {input.infile}; "
         "cp {params.outdir}/*.gbk "
         "output/prokka/{params.fname}.gbk; "
         # "rm -rf {params.outdir}"
@@ -46,37 +46,32 @@ rule annotate:
 
 rule phispy:
     input:
-        "output/prokka/{genome}.gbk"
+        infile="output/prokka/{genome}.gbk",
+        pvogs="../databases/pVOGs.hmm"
     output:
         "output/phispy/{genome}.tsv"
     params:
-        pvogs="../databases/pVOGs.hmm",
-        outdir="output/phispy/{genome}",
-        fname="{genome}"
+        outdir="output/phispy/{genome}"
     conda:
         "../envs/phispy.yaml"
     shell:
-        "PhiSpy.py {input} "
-        "--phmms {params.pvogs} -o {params.outdir} 2>/dev/null; "
-        "cp {params.outdir}/prophage_coordinates.tsv output/phispy/{params.fname}.tsv"
+        "PhiSpy.py {input.infile} "
+        "--phmms {input.pvogs} -o {params.outdir}; "
+        "cp {params.outdir}/prophage_coordinates.tsv output/phispy/{wildcards.genome}.tsv"
 
 
 rule virsorter:
     input:
         infile="../genomes/{genome}.fasta",
+        virsorter="../scripts/VirSorter/wrapper_phage_contigs_sorter_iPlant.pl",
         database="../databases/virsorter-data/"
     output:
         directory("output/virsorter/{genome}")
     conda:
         "../envs/virsorter.yaml"
-    params:
-        virsorter="../scripts/VirSorter/wrapper_phage_contigs_sorter_iPlant.pl",
-        outdir="output/virsorter/{genome}",
-        fname="{genome}"
     shell:
-        "{params.virsorter} -f {input.infile} -db 1 --data-dir {input.database} "
-        "--wdir {params.outdir} 2>/dev/null; "
-        # "cp {params.outdir}/*.csv output/virsorter/{params.fname}.csv"
+        "{input.virsorter} -f {input.infile} -db 1 --data-dir {input.database} "
+        "--wdir {output}; "
 
 
 rule IS_elements:
@@ -104,7 +99,7 @@ rule install_virsorter:
         "cd ../scripts/; "
         "git clone https://github.com/simroux/VirSorter.git; "
         "cd ../scripts/VirSorter/Scripts; "
-        "make clean; make;
+        "make clean; make; cd {cwd}"
 
 
 rule virsorter_database:
@@ -112,9 +107,9 @@ rule virsorter_database:
         directory("../databases/virsorter-data")
     priority: 100
     shell:
-        "cd ../databases; "
+        "cd ../databases; rm -rf *tar.gz*; "
         "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz; "
-        "tar -xvzf virsorter-data-v2.tar.gz; "
+        "tar -xvzf virsorter-data*.tar.gz; cd {cwd}"
 
 
 rule IS_database:
