@@ -23,6 +23,58 @@ rule all:
         expand("output/virsorter/{genome}", genome=config['genomes'])
 
 
+rule IS_elements:
+    input:
+        rules.IS_database.output
+    output:
+        "output/IS-elements/{genome}.txt"
+    conda:
+        "../envs/seqkit.yaml"
+    params:
+        query="../genomes/{genome}.fasta",
+        identity=config['IS_BLAST']['identity'],
+        evalue=config['IS_BLAST']['evalue']
+    shell:
+        "blastn -db {input.database}/IS.fna -query {params.query} "
+        "-perc_identity {params.identity} -evalue {params.evalue} "
+        '-outfmt "6 qstart qend" > output/IS-elements/{wildcards.genome}.txt'
+
+
+rule install_virsorter:
+    output:
+        directory("../scripts/VirSorter")
+    priority: 100
+    shell:
+        "cd ../scripts/; "
+        "git clone https://github.com/simroux/VirSorter.git; "
+        "cd ../scripts/VirSorter/Scripts; "
+        "make clean; make; cd {cwd}"
+
+
+rule virsorter_database:
+    output:
+        directory("../databases/virsorter-data")
+    priority: 100
+    shell:
+        "cd ../databases; rm -rf *tar.gz*; "
+        "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz; "
+        "tar -xvzf virsorter-data*.tar.gz; cd {cwd}"
+
+
+rule IS_database:
+    output:
+        directory("../databases/IS-database")
+    conda:
+        "../envs/seqkit.yaml"
+    priority: 100
+    shell:
+        "cd ../databases/; rm -rf ISfinder-sequences; "
+        "git clone https://github.com/thanhleviet/ISfinder-sequences; "
+        "rm -rf IS-database; mkdir IS-database; cd IS-database; "
+        "seqkit rmdup -s < ../ISfinder-sequences/IS.fna > IS.fna; "
+        "rm -rf ../ISfinder-sequences; "
+        "makeblastdb -in IS.fna -parse_seqids -dbtype nucl; "
+        
 # If output exists the command shouldn't be running...
 # If prokka already annotated genome it will give rise to error.
 rule annotate:
@@ -75,56 +127,3 @@ rule virsorter:
         "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
         "-db 1 --data-dir {input.database} "
         "--wdir {output}; "
-
-
-rule IS_elements:
-    input:
-        rules.IS_database.output
-    output:
-        "output/IS-elements/{genome}.txt"
-    conda:
-        "../envs/seqkit.yaml"
-    params:
-        query="../genomes/{genome}.fasta",
-        identity=config['IS_BLAST']['identity'],
-        evalue=config['IS_BLAST']['evalue']
-    shell:
-        "blastn -db {input.database}/IS.fna -query {params.query} "
-        "-perc_identity {params.identity} -evalue {params.evalue} "
-        '-outfmt "6 qstart qend" > output/IS-elements/{wildcards.genome}.txt'
-
-
-rule install_virsorter:
-    output:
-        directory("../scripts/VirSorter")
-    priority: 100
-    shell:
-        "cd ../scripts/; "
-        "git clone https://github.com/simroux/VirSorter.git; "
-        "cd ../scripts/VirSorter/Scripts; "
-        "make clean; make; cd {cwd}"
-
-
-rule virsorter_database:
-    output:
-        directory("../databases/virsorter-data")
-    priority: 100
-    shell:
-        "cd ../databases; rm -rf *tar.gz*; "
-        "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz; "
-        "tar -xvzf virsorter-data*.tar.gz; cd {cwd}"
-
-
-rule IS_database:
-    output:
-        directory("../databases/IS-database")
-    conda:
-        "../envs/seqkit.yaml"
-    priority: 100
-    shell:
-        "cd ../databases/; rm -rf ISfinder-sequences; "
-        "git clone https://github.com/thanhleviet/ISfinder-sequences; "
-        "rm -rf IS-database; mkdir IS-database; cd IS-database; "
-        "seqkit rmdup -s < ../ISfinder-sequences/IS.fna > IS.fna; "
-        "rm -rf ../ISfinder-sequences; "
-        "makeblastdb -in IS.fna -parse_seqids -dbtype nucl; "
