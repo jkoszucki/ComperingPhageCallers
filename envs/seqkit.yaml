@@ -1,10 +1,7 @@
 name: seqkit
 channels:
-  - conda-forge
   - bioconda
-  - r
-  - defaults
+  - conda-forge
 dependencies:
-  - blast=2.6.0=boost1.64_2
-  - seqkit=0.15.0=0
+  - seqkit=0.15.0
 prefix: /usr/local/anaconda3/envs/seqkit
