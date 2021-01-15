@@ -1,4 +1,4 @@
 channels:
   - hcc
 dependencies:
-  - abacas.1.3.1
+  - abacas
