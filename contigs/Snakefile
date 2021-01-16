@@ -71,7 +71,6 @@ rule abacas:
         "rm {wildcards.genome}*; rm nucmer*; rm *out"
 
 
-
 # If output exists the command shouldn't be running...
 # If prokka already annotated genome it will give rise to error.
 rule annotate:
@@ -85,7 +84,7 @@ rule annotate:
     conda:
         "../envs/prokka.yaml"
     shell:
-        "prokka --usegenus --genus Caudovirales --kingdom Bacteria "
+        "prokka --usegenus --genus Caudovirales --force --kingdom Bacteria "
         "--outdir {params.outdir} {input}/assembly.fasta; "
         "cp {params.outdir}/*.gbk output/prokka/{wildcards.genome}.gbk; "
 

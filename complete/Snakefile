@@ -23,23 +23,6 @@ rule all:
         expand("output/virsorter/{genome}", genome=config['genomes'])
 
 
-rule IS_elements:
-    input:
-        rules.IS_database.output
-    output:
-        "output/IS-elements/{genome}.txt"
-    conda:
-        "../envs/seqkit.yaml"
-    params:
-        query="../genomes/{genome}.fasta",
-        identity=config['IS_BLAST']['identity'],
-        evalue=config['IS_BLAST']['evalue']
-    shell:
-        "blastn -db {input.database}/IS.fna -query {params.query} "
-        "-perc_identity {params.identity} -evalue {params.evalue} "
-        '-outfmt "6 qstart qend" > output/IS-elements/{wildcards.genome}.txt'
-
-
 rule install_virsorter:
     output:
         directory("../scripts/VirSorter")
@@ -74,7 +57,25 @@ rule IS_database:
         "seqkit rmdup -s < ../ISfinder-sequences/IS.fna > IS.fna; "
         "rm -rf ../ISfinder-sequences; "
         "makeblastdb -in IS.fna -parse_seqids -dbtype nucl; "
-        
+
+
+
+rule IS_elements:
+    input:
+        database=rules.IS_database.output
+    output:
+        "output/IS-elements/{genome}.txt"
+    conda:
+        "../envs/seqkit.yaml"
+    params:
+        query="../genomes/{genome}.fasta",
+        identity=config['IS_BLAST']['identity'],
+        evalue=config['IS_BLAST']['evalue']
+    shell:
+        "blastn -db {input.database}/IS.fna -query {params.query} "
+        "-perc_identity {params.identity} -evalue {params.evalue} "
+        '-outfmt "6 qstart qend" > output/IS-elements/{wildcards.genome}.txt'
+
 # If output exists the command shouldn't be running...
 # If prokka already annotated genome it will give rise to error.
 rule annotate:
@@ -89,7 +90,7 @@ rule annotate:
     conda:
         "../envs/prokka.yaml"
     shell:
-        "prokka --usegenus --genus Caudovirales --kingdom Bacteria "
+        "prokka --usegenus --genus Caudovirales --force --kingdom Bacteria "
         "--outdir {params.outdir} {input.infile}; "
         "cp {params.outdir}/*.gbk "
         "output/prokka/{params.fname}.gbk; "
