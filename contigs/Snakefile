@@ -17,6 +17,42 @@ rule all:
         expand("output/phispy/{genome}.tsv", genome=config['genomes']),
         expand("output/virsorter/{genome}", genome=config['genomes'])
 
+rule install_virsorter:
+    output:
+        directory("../scripts/VirSorter")
+    priority: 100
+    shell:
+        "cd ../scripts/; "
+        "git clone https://github.com/simroux/VirSorter.git; "
+        "cd ../scripts/VirSorter/Scripts; "
+        "make clean; make; cd {cwd}"
+
+
+rule virsorter_database:
+    output:
+        directory("../databases/virsorter-data")
+    priority: 100
+    shell:
+        "cd ../databases; rm -rf *tar.gz*; "
+        "wget https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz; "
+        "tar -xvzf virsorter-data*.tar.gz; cd {cwd}"
+
+
+rule IS_database:
+    output:
+        directory("../databases/IS-database")
+    conda:
+        "../envs/seqkit.yaml"
+    priority: 100
+    shell:
+        "cd ../databases/; rm -rf ISfinder-sequences; "
+        "git clone https://github.com/thanhleviet/ISfinder-sequences; "
+        "rm -rf IS-database; mkdir IS-database; cd IS-database; "
+        "seqkit rmdup -s < ../ISfinder-sequences/IS.fna > IS.fna; "
+        "rm -rf ../ISfinder-sequences; "
+        "makeblastdb -in IS.fna -parse_seqids -dbtype nucl; "
+
+
 rule reads:
     input:
         "../genomes/{genome}.fasta"
@@ -107,13 +143,15 @@ rule phispy:
 rule virsorter:
     input:
         infile=rules.assembly.output,
-        virsorter="../scripts/VirSorter/wrapper_phage_contigs_sorter_iPlant.pl",
-        database="../databases/virsorter-data/"
+        virsorter=rules.install_virsorter.output,
+        database=rules.virsorter_database.output
+        # virsorter="../scripts/VirSorter/wrapper_phage_contigs_sorter_iPlant.pl",
+        # database="../databases/virsorter-data/"
     output:
         directory("output/virsorter/{genome}")
     conda:
         "../envs/virsorter.yaml"
     shell:
-        "{input.virsorter} -f {input.infile} -db 1 --data-dir {input.database} "
-        "--wdir {output} 2>/dev/null; "
-        # "cp -f {params.outdir}/*.csv output/virsorter/{params.fname}.csv"
+        "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
+        "-db 1 --data-dir {input.database} "
+        "--wdir {output}; "
