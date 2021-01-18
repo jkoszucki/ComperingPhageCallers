@@ -9,6 +9,12 @@ _ = [Path(Path(cwd).parent, folder) for folder in folders]
 _ = Path(cwd, 'output').mkdir(exist_ok=True)
 _ = [Path(cwd, 'output', subfolder).mkdir(exist_ok=True) for subfolder in subfolders]
 
+yamls = list(Path(cwd, ".snakemake/conda/").glob('*yaml'))
+for yaml in yamls:
+    with open(yaml, 'r+') as f:
+        if 'virsorter' in f.read():
+            target = str(yaml.with_suffix(''))
+
 configfile: 'config.yaml'
 
 rule all:
@@ -52,17 +58,9 @@ rule IS_database:
         "rm -rf ../ISfinder-sequences; "
         "makeblastdb -in IS.fna -parse_seqids -dbtype nucl; "
 
-cwd = Path.cwd()
-yamls = list(Path(cwd, ".snakemake/conda/").glob('*yaml'))
-for yaml in yamls:
-    with open(yaml, 'r+') as f:
-        if 'virsorter' in f.read():
-            target = str(yaml.with_suffix(''))
-
 rule virsorter_env:
-    output: directory(f"{target}/etc")
-    priority: 100
-    shell: "cp -rf ../scripts/etc {target}"
+    output: ("%s/etc" % target)
+    shell: ("cp -rf ../envs/etc %s" % target)
 
 
 rule reads:
@@ -116,7 +114,7 @@ rule abacas:
     shell:
         "abacas.1.3.1.pl -r {input.reference} -q {input.contigs}/assembly.fasta -p nucmer -i 98 -v 100 -o {output}; "
         "mv output/contigs-sort/{wildcards.genome}.tab.tab output/contigs-sort/{wildcards.genome}.tab; "
-        "rm {wildcards.genome}*; rm nucmer*; rm *out"
+        "rm -rf {wildcards.genome}*; rm -rf nucmer*; rm -rf *out"
 
 
 # If output exists the command shouldn't be running...
@@ -124,7 +122,6 @@ rule abacas:
 rule annotate:
     input:
         rules.assembly.output
-        # "output/contigs/{genome}.fasta"
     output:
         "output/prokka/{genome}.gbk"
     params:

@@ -1,5 +1,6 @@
 genomes:
-  - AATZP
+  - test
+  # - AATZP
   # - INF014
   # - INF078
   # - INF116

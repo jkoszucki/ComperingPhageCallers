@@ -9,6 +9,11 @@ _ = [Path(Path(cwd).parent, folder) for folder in folders]
 _ = Path(cwd, 'output').mkdir(exist_ok=True)
 _ = [Path(cwd, 'output', subfolder).mkdir(exist_ok=True) for subfolder in subfolders]
 
+yamls = list(Path(cwd, ".snakemake/conda/").glob('*yaml'))
+for yaml in yamls:
+    with open(yaml, 'r+') as f:
+        if 'virsorter' in f.read():
+            target = str(yaml.with_suffix(''))
 
 configfile: 'config.yaml'
 
@@ -58,18 +63,10 @@ rule IS_database:
         "rm -rf ../ISfinder-sequences; "
         "makeblastdb -in IS.fna -parse_seqids -dbtype nucl; "
 
-cwd = Path.cwd()
-yamls = list(Path(cwd, ".snakemake/conda/").glob('*yaml'))
-for yaml in yamls:
-    with open(yaml, 'r+') as f:
-        if 'virsorter' in f.read():
-            target = str(yaml.with_suffix(''))
 
 rule virsorter_env:
-    output:
-        directory(f"{target}/env")
-    priority: 100
-    shell: f"cp -rf ../scripts/etc {target}"
+    output: ("%s/etc" % target)
+    shell: ("cp -rf ../envs/etc %s" % target)
 
 
 rule IS_elements:
@@ -106,7 +103,6 @@ rule annotate:
         "--outdir {params.outdir} {input.infile}; "
         "cp {params.outdir}/*.gbk "
         "output/prokka/{params.fname}.gbk; "
-        # "rm -rf {params.outdir}"
 
 
 rule phispy:
