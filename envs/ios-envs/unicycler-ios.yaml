@@ -1,0 +1,8 @@
+name: unicycler
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - unicycler=0.4.8
+
+prefix: /usr/local/anaconda3/envs/unicycler

@@ -1,0 +1,7 @@
+name: phispy-env
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - phispy=4.2.6
+prefix: /usr/local/anaconda3/envs/phispy-env

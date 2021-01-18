@@ -8,8 +8,12 @@ cp -f config.yaml contigs/config.yaml
 
 ##############################################################
 # Run complete first! Necessary to download all dependecies. #
-# Download pVOGs.hmm manually.				     #
+# Download pVOGs.hmm manually. Install locally wgsim!	     #
 ##############################################################
+
+# Prepering environments on linux or ios.
+./scripts/prepare-envs.sh
+#./scripts/dependecies.sh
 
 read -p 'Number of cores: ' cores
 
