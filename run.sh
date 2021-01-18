@@ -18,8 +18,8 @@ cp -f config.yaml contigs/config.yaml
 read -p 'Number of cores: ' cores
 
 cd complete/ 
-nice -n 5 snakemake --use-conda --cores ${cores}
+nice -n 5 snakemake --use-conda --cores ${cores} -R
 
 cd ../contigs/
-nice -n 5 snakemake --use-conda --cores ${cores}
+nice -n 5 snakemake --use-conda --cores ${cores} -R
 #conda deactivate

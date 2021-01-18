@@ -9,12 +9,6 @@ _ = [Path(Path(cwd).parent, folder) for folder in folders]
 _ = Path(cwd, 'output').mkdir(exist_ok=True)
 _ = [Path(cwd, 'output', subfolder).mkdir(exist_ok=True) for subfolder in subfolders]
 
-yamls = list(Path(cwd, ".snakemake/conda/").glob('*yaml'))
-for yaml in yamls:
-    with open(yaml, 'r+') as f:
-        if 'virsorter' in f.read():
-            target = str(yaml.with_suffix(''))
-
 configfile: 'config.yaml'
 
 rule all:
@@ -65,8 +59,14 @@ rule IS_database:
 
 
 rule virsorter_env:
-    output: ("%s/etc" % target)
-    shell: ("cp -rf ../envs/etc %s" % target)
+    output: "virsorter-env"
+    run:
+        yamls = list(Path(cwd, ".snakemake/conda/").glob('*yaml'))
+        for yaml in yamls:
+            with open(yaml, 'r+') as f:
+                if 'virsorter' in f.read():
+                    target = str(yaml.with_suffix(''))
+                    shell("cp -rf ../envs/etc %s; touch virsorter-env" % target)
 
 
 rule IS_elements:
@@ -136,3 +136,4 @@ rule virsorter:
         "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
         "-db 1 --data-dir {input.database} "
         "--wdir {output}; "
+        "rm virsorter-env"
