@@ -5,9 +5,12 @@
 # Download pVOGs.hmm manually. Install locally wgsim!	     #
 ##############################################################
 
-./scripts/prepare-envs.sh
+read -p "ios or linux?  >>  " os
+read -p "Number of cores  >>  " cores
 
-read -p 'Number of cores: ' cores
+export cores
+export os
+bash scripts/prepare-envs.sh
 
 cd complete/ 
 nice -n 5 snakemake --use-conda --cores ${cores} -R

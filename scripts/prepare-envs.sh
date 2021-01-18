@@ -1,22 +1,33 @@
 #!/bin/bash
 
-cp -f config.yaml complete/config.yaml
-cp -f config.yaml contigs/config.yaml
-
 ##############################################################
 # Run complete first! Necessary to download all dependecies. #
 # Download pVOGs.hmm manually. Install locally wgsim!	     #
 ##############################################################
 
-# Prepering environments on linux or ios.
-./scripts/prepare-envs.sh
+cwd=$(pwd)
+
 #./scripts/dependecies.sh
+cp -f config.yaml complete/config.yaml
+cp -f config.yaml contigs/config.yaml
 
-read -p 'Number of cores: ' cores
+if [[ ${os} = 'ios' ]]
+then
+	cd envs/ios-envs
+	for f in *; do cp -f ${f} ../${f%?????????}.yaml; done
 
+elif [[ ${os} = 'linux' ]]
+then
+	cd envs/linux-envs
+	for f in *; do cp -f ${f} ../${f%???????????}.yaml; done
+else
+	echo 'Wrong name'
+fi
+
+cd ${cwd} 
 cd complete/ 
-nice -n 5 snakemake --use-conda --cores ${cores} --conda-create-envs-only
+snakemake --use-conda --cores ${cores} -R --conda-create-envs-only
 
 cd ../contigs/
-nice -n 5 snakemake --use-conda --cores ${cores} -R --conda-create-envs-only
+snakemake --use-conda --cores ${cores} -R --conda-create-envs-only
 

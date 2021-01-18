@@ -3,7 +3,6 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - perl-bioperl=1.6.924
   - _libgcc_mutex=0.1=main
   - blast=2.5.0=hc0b0e79_3
   - boost=1.73.0=py38_11
