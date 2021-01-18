@@ -67,6 +67,8 @@ rule virsorter_env:
                 if 'virsorter' in f.read():
                     target = str(yaml.with_suffix(''))
                     shell("cp -rf ../envs/etc %s; touch virsorter-env" % target)
+                    shell("cd %s; yes | cp -r lib/perl5/site_perl/5.22.0/Bio/ lib/site_perl/5.26.2/x86_64-linux-thread-multi/" % target)
+
 
 
 rule reads:
@@ -170,4 +172,4 @@ rule virsorter:
         "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
         "-db 1 --data-dir {input.database} "
         "--wdir {output}; "
-        "rm virsorter-env"
+        "rm -f virsorter-env"
