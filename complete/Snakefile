@@ -58,7 +58,6 @@ rule IS_database:
         "rm -rf ../ISfinder-sequences; "
         "makeblastdb -in IS.fna -parse_seqids -dbtype nucl; "
 
-
 cwd = Path.cwd()
 yamls = list(Path(cwd, ".snakemake/conda/").glob('*yaml'))
 for yaml in yamls:
@@ -67,10 +66,10 @@ for yaml in yamls:
             target = str(yaml.with_suffix(''))
 
 rule virsorter_env:
-    ouput=directory("{target}/etc")
+    output:
+        directory(f"{target}/env")
     priority: 100
-    shell: "cp -rf ../scripts/etc {target}"
-
+    shell: f"cp -rf ../scripts/etc {target}"
 
 
 rule IS_elements:
@@ -131,12 +130,13 @@ rule virsorter:
         infile="../genomes/{genome}.fasta",
         virsorter=rules.install_virsorter.output,
         database=rules.virsorter_database.output,
-        env=rules.virsorter_env.ouput
+        env=rules.virsorter_env.output
     output:
         directory("output/virsorter/{genome}")
     conda:
         "../envs/virsorter.yaml"
     shell:
+        "echo {input.env}; "
         "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
         "-db 1 --data-dir {input.database} "
         "--wdir {output}; "

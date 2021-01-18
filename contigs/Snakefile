@@ -60,7 +60,7 @@ for yaml in yamls:
             target = str(yaml.with_suffix(''))
 
 rule virsorter_env:
-    ouput=directory("{target}/etc")
+    output: directory(f"{target}/etc")
     priority: 100
     shell: "cp -rf ../scripts/etc {target}"
 
@@ -157,12 +157,13 @@ rule virsorter:
         infile=rules.assembly.output,
         virsorter=rules.install_virsorter.output,
         database=rules.virsorter_database.output,
-        env=rules.virsorter_env.ouput
+        env=rules.virsorter_env.output
     output:
         directory("output/virsorter/{genome}")
     conda:
         "../envs/virsorter.yaml"
     shell:
+        "echo {input.env}; "
         "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
         "-db 1 --data-dir {input.database} "
         "--wdir {output}; "
