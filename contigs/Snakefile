@@ -76,7 +76,7 @@ rule assembly:
         read1=rules.reads.output.read1,
         read2=rules.reads.output.read2
     output:
-        "output/assemblies/{genome}"
+        directory("output/assemblies/{genome}")
     params:
         min_fasta_length=config['min_fasta_length']
     priority: 2

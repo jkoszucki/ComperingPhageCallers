@@ -1,7 +1,8 @@
-name: seqkit
+name: seqkit-env
 channels:
   - bioconda
-  - conda-forge
+  - defaults
 dependencies:
-  - seqkit=0.15.0
-prefix: /usr/local/anaconda3/envs/seqkit
+  - seqkit=0.14.0=0
+prefix: /home/jkoszucki/.conda/envs/seqkit-env
+
