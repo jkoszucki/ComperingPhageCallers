@@ -98,10 +98,11 @@ rule assembly:
     params:
         min_fasta_length=config['min_fasta_length']
     priority: 2
+    threads: workflow.cores * 0.6
     conda:
         "../envs/unicycler.yaml"
     shell:
-        "unicycler -t 8 --no_correct -1 {input.read1} -2 {input.read2} "
+        "unicycler -t {threads} --no_correct -1 {input.read1} -2 {input.read2} "
         "--min_fasta_length {params.min_fasta_length} "
         "-o {output}; "
         "cp -f output/assemblies/{wildcards.genome}/assembly.fasta "
@@ -165,11 +166,12 @@ rule virsorter:
         # env=rules.virsorter_env.output
     output:
         directory("output/virsorter/{genome}")
+    threads: (workflow.cores * 0.6)/2
     conda:
         "../envs/virsorter.yaml"
     shell:
         # "cat {input.env}; "
         "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
-        "-db 1 --data-dir {input.database} "
+        "-db 1 --data-dir {input.database} --ncpu {threads} "
         "--wdir {output}; "
         "cd {cwd}; rm -f virsorter-env"
