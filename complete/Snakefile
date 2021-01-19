@@ -131,12 +131,11 @@ rule virsorter:
         # env=rules.virsorter_env.output
     output:
         directory("output/virsorter/{genome}")
-    threads: (workflow.cores * 0.6)/2
+    # threads: (workflow.cores * 0.6)/2
+    # --ncpu {threads}
     conda:
         "../envs/virsorter.yaml"
     shell:
-        # "cat {input.env};
         "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
-        "-db 1 --data-dir {input.database} --ncpu {threads} "
+        "-db 1 --data-dir {input.database} "
         "--wdir {output}; "
-        "cd {cwd}; rm -f virsorter-env"

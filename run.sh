@@ -13,7 +13,7 @@ export os
 bash scripts/prepare-envs.sh
 
 cd complete/ 
-nice -n 5 snakemake --use-conda --cores ${cores} -R
+nice -n 5 snakemake --use-conda --cores ${cores}
 
 cd ../contigs/
-nice -n 5 snakemake --use-conda --cores ${cores} -R
+nice -n 5 snakemake --use-conda --cores ${cores}
