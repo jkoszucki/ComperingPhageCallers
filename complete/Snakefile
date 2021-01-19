@@ -66,8 +66,9 @@ rule virsorter_env:
             with open(yaml, 'r+') as f:
                 if 'virsorter' in f.read():
                     target = str(yaml.with_suffix(''))
-                    shell("cp -rf ../envs/etc %s; touch virsorter-env" % target)
-                    # shell("cd %s; yes | cp -r lib/perl5/site_perl/5.22.0/Bio/ lib/site_perl/5.26.2/x86_64-linux-thread-multi/" % target)
+                    shell("mkdir -p %s; touch virsorter-env" % target)
+                    shell("cp -r ../envs/etc %s; " % target)
+                    shell("cd %s; yes | cp -r lib/perl5/site_perl/5.22.0/Bio/ lib/site_perl/5.26.2/x86_64-linux-thread-multi/ 2>/dev/null" % target)
 
 
 rule IS_elements:
