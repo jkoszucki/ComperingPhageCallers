@@ -58,17 +58,17 @@ rule IS_database:
         "makeblastdb -in IS.fna -parse_seqids -dbtype nucl; "
 
 
-rule virsorter_env:
-    output: "virsorter-env"
-    run:
-        yamls = list(Path(cwd, ".snakemake/conda/").glob('*yaml'))
-        for yaml in yamls:
-            with open(yaml, 'r+') as f:
-                if 'virsorter' in f.read():
-                    target = str(yaml.with_suffix(''))
-                    shell("mkdir -p %s; touch virsorter-env" % target)
-                    shell("cp -r ../envs/etc %s; " % target)
-                    shell("cd %s; yes | cp -r lib/perl5/site_perl/5.22.0/Bio/ lib/site_perl/5.26.2/x86_64-linux-thread-multi/ 2>/dev/null" % target)
+# rule virsorter_env:
+#     output: "virsorter-env"
+#     run:
+#         yamls = list(Path(cwd, ".snakemake/conda/").glob('*yaml'))
+#         for yaml in yamls:
+#             with open(yaml, 'r+') as f:
+#                 if 'virsorter' in f.read():
+#                     target = str(yaml.with_suffix(''))
+#                     shell("mkdir -p %s; touch virsorter-env" % target)
+#                     shell("cp -r ../envs/etc %s; " % target)
+#                     shell("cd %s; yes | cp -r lib/perl5/site_perl/5.22.0/Bio/ lib/site_perl/5.26.2/x86_64-linux-thread-multi/ 2>/dev/null" % target)
 
 
 rule IS_elements:
@@ -127,14 +127,14 @@ rule virsorter:
     input:
         infile="../genomes/{genome}.fasta",
         virsorter=rules.install_virsorter.output,
-        database=rules.virsorter_database.output,
-        env=rules.virsorter_env.output
+        database=rules.virsorter_database.output
+        # env=rules.virsorter_env.output
     output:
         directory("output/virsorter/{genome}")
     conda:
         "../envs/virsorter.yaml"
     shell:
-        "cat {input.env}; "
+        # "cat {input.env}; "
         "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
         "-db 1 --data-dir {input.database} "
         "--wdir {output}; "
