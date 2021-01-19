@@ -134,7 +134,7 @@ rule virsorter:
     conda:
         "../envs/virsorter.yaml"
     shell:
-        "echo {input.env}; "
+        "cat {input.env}; "
         "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
         "-db 1 --data-dir {input.database} "
         "--wdir {output}; "
