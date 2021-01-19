@@ -31,12 +31,12 @@ contigs = parse_abacas_contigs(contigs)
 
 # Load coordinates from VirSorter for complete genome.
 vrs_complete = filter_virsorter_categories(Path(cwd.parent, \
-f'complete/output/virsorter/{genome}/Predicted_viral_sequences'), categories=[3,6])
+f'complete/output/virsorter/{genome}/Predicted_viral_sequences'), categories=[3,6]) # Excluded categories!!!
 vrs_complete, _ = get_virsorter_coordinates(vrs_complete)
 
 # Load coordinates and contigs' IDs from VirSorter for contigs.
 vrs_contigs = filter_virsorter_categories(Path(cwd.parent, \
-f'contigs/output/virsorter/{genome}/Predicted_viral_sequences'), categories=[3,6])
+f'contigs/output/virsorter/{genome}/Predicted_viral_sequences'), categories=[3,6])  # Excluded categories!!!
 vrs_contigs, vrs_ids_contigs = get_virsorter_coordinates(vrs_contigs)
 vrs_contigs = list(zip(vrs_contigs, vrs_ids_contigs))
 

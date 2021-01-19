@@ -16,7 +16,6 @@ genomes:
   # - NTUH-K2044
   # - PMK1
   # - XH209
-  # - NTUH-K2044
 threads:
   - 8
 read_lenght:
