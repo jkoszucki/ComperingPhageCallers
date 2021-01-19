@@ -94,3 +94,11 @@ complete_vs_contigs(program='phi',
                     genome_lenght=genome_lenght,
                     fname=genome,
                     fpath=figure)
+
+# Save coordinates.
+coordinates = Path(cwd, 'coordinates')
+_ = coordinates.mkdir(exist_ok=True)
+fnames = ['vrs_complete', 'vrs_contigs', 'phi_complete', 'phi_contigs', 'is_complete', 'contigs']
+for coord, name in zip([vrs_complete, vrs_contigs, phi_complete, phi_contigs, is_complete, contigs], genome):
+    lines_to_save = [prepare_to_save(line) for line in coord]
+    save_lines(lines_to_save, Path(coordinates, genome))

@@ -70,7 +70,6 @@ rule virsorter_env:
                     shell("cd %s; yes | cp -r lib/perl5/site_perl/5.22.0/Bio/ lib/site_perl/5.26.2/x86_64-linux-thread-multi/" % target)
 
 
-
 rule reads:
     input:
         "../genomes/{genome}.fasta"
