@@ -146,7 +146,7 @@ rule phispy:
 
 rule virsorter:
     input:
-        infile="output/assemblies/{genome}",
+        infile=rules.assembly.output,
         virsorter=rules.install_virsorter.output,
         database=rules.virsorter_database.output
         # env=rules.virsorter_env.output
@@ -157,6 +157,6 @@ rule virsorter:
     conda:
         "../envs/virsorter.yaml"
     shell:
-        "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile} "
+        "{input.virsorter}/wrapper_phage_contigs_sorter_iPlant.pl -f {input.infile}/assembly.fasta "
         "-db 1 --data-dir {input.database} "
         "--wdir {output}; "
