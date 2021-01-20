@@ -9,11 +9,6 @@ _ = [Path(Path(cwd).parent, folder) for folder in folders]
 _ = Path(cwd, 'output').mkdir(exist_ok=True)
 _ = [Path(cwd, 'output', subfolder).mkdir(exist_ok=True) for subfolder in subfolders]
 
-yamls = list(Path(cwd, ".snakemake/conda/").glob('*yaml'))
-for yaml in yamls:
-    with open(yaml, 'r+') as f:
-        if 'virsorter' in f.read():
-            target = str(yaml.with_suffix(''))
 
 configfile: 'config.yaml'
 
@@ -97,20 +92,21 @@ rule assembly:
         "output/contigs/{wildcards.genome}.fasta"
 
 
-rule abacas:
-    input:
-        contigs=rules.assembly.output,
-        reference='../genomes/{genome}.fasta'
-    output:
-        "output/contigs-sort/{genome}.tab"
-    # params:
-        # reference="../../../genomes/{genome}.fasta",
+# rule abacas:
+#     input:
+#         contigs=rules.assembly.output,
+#         reference='../genomes/{genome}.fasta'
+#     output:
+#         "output/contigs-sort/{genome}.tab"
+#     # params:
+#         # reference="../../../genomes/{genome}.fasta",
+#
+#     priority: 1
+#     conda:
+#         "../envs/abacas.yaml"
+#     shell:
+#         "echo ############; echo 'Run abacas scrpit here'; echo ############'"
 
-    priority: 1
-    conda:
-        "../envs/abacas.yaml"
-    shell:
-        "echo ############; echo 'Run abacas scrpit here'; echo ############'"
         # "abacas.1.3.1.pl -r {input.reference} -q {input.contigs}/assembly.fasta -p nucmer -i 98 -v 100 -o {output}; "
         # "mv output/contigs-sort/{wildcards.genome}.tab.tab output/contigs-sort/{wildcards.genome}.tab; "
         # "rm -rf {wildcards.genome}*; rm -rf nucmer*; rm -rf *out"
@@ -150,7 +146,7 @@ rule phispy:
 
 rule virsorter:
     input:
-        infile=rules.assembly.output,
+        infile="output/assemblies/{genome}",
         virsorter=rules.install_virsorter.output,
         database=rules.virsorter_database.output
         # env=rules.virsorter_env.output
